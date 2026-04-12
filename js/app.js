@@ -9,7 +9,7 @@ if (document.getElementById('searchBtn')) {
       return;
     }
 
-    window.location.href = `recipes.html?ingredients=${ingredients}`;
+    window.location.href = `./recipes.html?ingredients=${ingredients}`;
   });
 }
 
@@ -58,7 +58,6 @@ if (document.getElementById('recipesContainer')) {
     const details = await fetchRecipeDetails(id);
 
     if (details) {
-      // Correção da lista de ingredientes  e informações nutricionais 
       modalDetails.innerHTML = `
         <h2 style="font-family: 'Poppins'">${details.title}</h2>
         <img src="${details.image}" style="width:100%; border-radius:8px; margin: 15px 0;">
