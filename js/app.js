@@ -27,8 +27,8 @@ if (document.getElementById('recipesContainer')) {
     const recipes = await fetchRecipes(ingredients);
     container.innerHTML = '';
 
-    if (recipes.length === 0) {
-      container.innerHTML = '<p>No recipes found. Try different ingredients!</p>'; [cite: 16]
+    if (!recipes || recipes.length === 0) {
+      container.innerHTML = '<p>No recipes found. Try different ingredients!</p>';
       return;
     }
 
@@ -55,30 +55,33 @@ if (document.getElementById('recipesContainer')) {
     modalDetails.innerHTML = '<p>Loading instructions...</p>';
     modal.style.display = "block";
 
-    const details = await fetchRecipeDetails(id); [cite: 12]
+    const details = await fetchRecipeDetails(id);
 
     if (details) {
+      // Correção da lista de ingredientes  e informações nutricionais 
       modalDetails.innerHTML = `
         <h2 style="font-family: 'Poppins'">${details.title}</h2>
         <img src="${details.image}" style="width:100%; border-radius:8px; margin: 15px 0;">
         
         <div style="text-align: left; padding: 0 10px;">
           <h3>Ingredients:</h3>
-          <ul>${details.extendedIngredients.map(ing => `<li>${ing.original}</li>`).forEach}</ul> [cite: 24]
+          <ul>${details.extendedIngredients.map(ing => `<li>${ing.original}</li>`).join('')}</ul>
           
           <h3>Instructions:</h3>
           <div>${details.instructions || "Step-by-step instructions not available."}</div> [cite: 28]
           
           <hr style="margin: 20px 0;">
           <h3>Nutritional Info:</h3>
-          <p><strong>Calories:</strong> ${Math.round(details.nutrition.nutrients[0].amount)} kcal</p> [cite: 13, 26]
+          <p><strong>Calories:</strong> ${Math.round(details.nutrition.nutrients[0].amount)} kcal</p>
         </div>
       `;
     }
   }
 
+  if (closeBtn) {
+    closeBtn.onclick = () => modal.style.display = "none";
+  }
 
-  closeBtn.onclick = () => modal.style.display = "none";
   window.onclick = (event) => {
     if (event.target == modal) modal.style.display = "none";
   };
