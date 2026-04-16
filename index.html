@@ -6,7 +6,6 @@
   <title>Smart Recipe Generator</title>
 
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&family=Open+Sans&display=swap" rel="stylesheet">
-
   <link rel="stylesheet" href="css/style.css" />
 </head>
 
@@ -26,7 +25,28 @@
         placeholder="e.g. chicken, rice, tomato"
       />
 
+      <div class="filters">
+        <select id="dietFilter">
+          <option value="">All Diets</option>
+          <option value="vegetarian">Vegetarian</option>
+          <option value="vegan">Vegan</option>
+          <option value="gluten-free">Gluten Free</option>
+          <option value="ketogenic">Ketogenic</option>
+          <option value="paleo">Paleo</option>
+        </select>
+        
+        <select id="maxTime">
+          <option value="120">Ready in (Any time)</option>
+          <option value="15">Max 15 min</option>
+          <option value="30">Max 30 min</option>
+          <option value="45">Max 45 min</option>
+          <option value="60">Max 1 hour</option>
+        </select>
+      </div>
+
       <button id="searchBtn">Find Recipes</button>
+      
+      <div id="searchHistory" class="history-tags"></div>
     </section>
   </main>
 

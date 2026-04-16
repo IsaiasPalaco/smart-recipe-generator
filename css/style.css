@@ -144,9 +144,25 @@ body {
   color: #666;
 }
 
+.filters {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 1rem;
+}
+
+.filters select {
+  flex: 1;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  background: white;
+  font-family: 'Open Sans', sans-serif;
+  cursor: pointer;
+}
+
 @media (max-width: 992px) {
   .recipes-grid {
-    grid-template-columns: repeat(2, 1fr); /* 2 colunas */
+    grid-template-columns: repeat(2, 1fr);
   }
 }
 
