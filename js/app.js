@@ -11,8 +11,8 @@ if (document.getElementById('searchBtn')) {
 
   searchBtn.addEventListener('click', () => {
     const ingredients = ingredientsInput.value.trim();
-    const diet = dietSelect.value;
-    const maxTime = timeSelect.value;
+    const diet = dietSelect ? dietSelect.value : '';
+    const maxTime = timeSelect ? timeSelect.value : '';
 
     if (!ingredients) {
       alert('Please enter ingredients!');
@@ -20,7 +20,7 @@ if (document.getElementById('searchBtn')) {
     }
 
     saveToHistory(ingredients);
-    window.location.href = `./recipes.html?ingredients=${ingredients}&diet=${diet}&maxTime=${maxTime}`;
+    window.location.href = `./recipes.html?ingredients=${encodeURIComponent(ingredients)}&diet=${diet}&maxTime=${maxTime}`;
   });
 
   function saveToHistory(term) {
@@ -57,16 +57,18 @@ if (document.getElementById('recipesContainer') || document.getElementById('favo
   const closeBtn = document.querySelector('.close-btn');
 
   const params = new URLSearchParams(window.location.search);
-  const ingredients = params.get('ingredients');
+  const ingredients = params.get('ingredients') || '';
   const diet = params.get('diet') || '';
   const maxTime = params.get('maxTime') || '';
 
-  if (!isFavoritesPage && document.getElementById('searchTitle')) {
-    document.getElementById('searchTitle').textContent = `Results for: ${ingredients}`;
+  const searchTitle = document.getElementById('searchTitle');
+  if (!isFavoritesPage && searchTitle && ingredients) {
+    searchTitle.textContent = `Results for: ${ingredients}`;
   }
 
   async function loadPageData() {
     let recipes = [];
+    container.innerHTML = '<p>Loading...</p>';
     
     if (isFavoritesPage) {
       recipes = JSON.parse(localStorage.getItem('favorites')) || [];
@@ -98,7 +100,7 @@ if (document.getElementById('recipesContainer') || document.getElementById('favo
         <h3>${recipe.title}</h3>
         <div style="display:flex; justify-content: space-between; padding: 10px; margin-top: auto;">
             <button class="view-btn" data-id="${recipe.id}">View Recipe</button>
-            <button class="fav-btn" data-id="${recipe.id}" data-title="${recipe.title}" data-image="${recipe.image}" style="background:none; border:none; cursor:pointer; font-size:1.2rem; color: ${isFav ? 'orange' : 'black'}">⭐</button>
+            <button class="fav-btn" data-id="${recipe.id}" data-title="${recipe.title}" data-image="${recipe.image}" style="background:none; border:none; cursor:pointer; font-size:1.2rem; color: ${isFav ? '#FF9800' : '#ccc'}">⭐</button>
         </div>
       `;
       container.appendChild(card);
@@ -113,12 +115,12 @@ if (document.getElementById('recipesContainer') || document.getElementById('favo
           const id = button.getAttribute('data-id');
           const title = button.getAttribute('data-title');
           const image = button.getAttribute('data-image');
-          toggleFavorite({id, title, image});
+          const isNowFav = toggleFavorite({id, title, image});
           
           if (isFavoritesPage) {
             loadPageData(); 
           } else {
-            button.style.color = button.style.color === 'orange' ? 'black' : 'orange';
+            button.style.color = isNowFav ? '#FF9800' : '#ccc';
           }
       });
     });
@@ -132,6 +134,10 @@ if (document.getElementById('recipesContainer') || document.getElementById('favo
     const details = await fetchRecipeDetails(id);
 
     if (details) {
+      const calories = details.nutrition?.nutrients.find(n => n.name === 'Calories')?.amount || 0;
+      const protein = details.nutrition?.nutrients.find(n => n.name === 'Protein')?.amount || 0;
+      const fat = details.nutrition?.nutrients.find(n => n.name === 'Fat')?.amount || 0;
+
       modalDetails.innerHTML = `
         <h2 style="font-family: 'Poppins'">${details.title}</h2>
         <img src="${details.image}" style="width:100%; border-radius:8px; margin: 15px 0;">
@@ -145,9 +151,9 @@ if (document.getElementById('recipesContainer') || document.getElementById('favo
           
           <div style="background: #eef9ee; padding: 15px; border-radius: 8px;">
             <h3>Nutritional Info (per serving):</h3> 
-            <p><strong>Calories:</strong> ${Math.round(details.nutrition?.nutrients.find(n => n.name === 'Calories')?.amount || 0)} kcal</p>
-            <p><strong>Protein:</strong> ${details.nutrition?.nutrients.find(n => n.name === 'Protein')?.amount || 0}g</p>
-            <p><strong>Fat:</strong> ${details.nutrition?.nutrients.find(n => n.name === 'Fat')?.amount || 0}g</p>
+            <p><strong>Calories:</strong> ${Math.round(calories)} kcal</p>
+            <p><strong>Protein:</strong> ${protein}g</p>
+            <p><strong>Fat:</strong> ${fat}g</p>
           </div>
         </div>
       `;
@@ -157,17 +163,25 @@ if (document.getElementById('recipesContainer') || document.getElementById('favo
   function toggleFavorite(recipe) {
     let favorites = JSON.parse(localStorage.getItem('favorites')) || [];
     const index = favorites.findIndex(f => f.id == recipe.id);
+    let added = false;
     
     if (index === -1) {
       favorites.push(recipe);
+      added = true;
     } else {
       favorites.splice(index, 1);
     }
     localStorage.setItem('favorites', JSON.stringify(favorites));
+    return added;
   }
 
-  if (closeBtn) closeBtn.onclick = () => modal.style.display = "none";
-  window.onclick = (e) => { if (e.target == modal) modal.style.display = "none"; };
+  if (closeBtn) {
+    closeBtn.onclick = () => { modal.style.display = "none"; };
+  }
+
+  window.onclick = (e) => { 
+    if (modal && e.target == modal) modal.style.display = "none"; 
+  };
 
   loadPageData();
 }

@@ -113,6 +113,35 @@ body {
   font-weight: 600;
 }
 
+.fav-link {
+  display: inline-block;
+  color: #FF9800;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 0.9rem;
+  transition: color 0.3s ease;
+}
+
+.fav-link:hover {
+  color: #e68900;
+  text-decoration: underline;
+}
+
+.history-tag {
+  display: inline-block;
+  background: #eee;
+  padding: 4px 10px;
+  margin: 5px;
+  border-radius: 20px;
+  cursor: pointer;
+  font-size: 0.8rem;
+  transition: background 0.3s ease;
+}
+
+.history-tag:hover {
+  background: #ddd;
+}
+
 .modal {
   display: none; 
   position: fixed;
