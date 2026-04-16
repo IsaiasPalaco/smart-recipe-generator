@@ -48,37 +48,57 @@ if (document.getElementById('searchBtn')) {
   }
 }
 
-if (document.getElementById('recipesContainer')) {
-  const params = new URLSearchParams(window.location.search);
-  const ingredients = params.get('ingredients');
-  const diet = params.get('diet') || '';
-  const maxTime = params.get('maxTime') || '';
+if (document.getElementById('recipesContainer') || document.getElementById('favoritesContainer')) {
+  const container = document.getElementById('recipesContainer') || document.getElementById('favoritesContainer');
+  const isFavoritesPage = !!document.getElementById('favoritesContainer');
   
-  const container = document.getElementById('recipesContainer');
   const modal = document.getElementById('recipeModal');
   const modalDetails = document.getElementById('modalDetails');
   const closeBtn = document.querySelector('.close-btn');
 
-  document.getElementById('searchTitle').textContent = `Results for: ${ingredients}`;
+  const params = new URLSearchParams(window.location.search);
+  const ingredients = params.get('ingredients');
+  const diet = params.get('diet') || '';
+  const maxTime = params.get('maxTime') || '';
 
-  async function loadRecipes() {
-    const recipes = await fetchRecipes(ingredients, diet, maxTime);
+  if (!isFavoritesPage && document.getElementById('searchTitle')) {
+    document.getElementById('searchTitle').textContent = `Results for: ${ingredients}`;
+  }
+
+  async function loadPageData() {
+    let recipes = [];
+    
+    if (isFavoritesPage) {
+      recipes = JSON.parse(localStorage.getItem('favorites')) || [];
+    } else {
+      recipes = await fetchRecipes(ingredients, diet, maxTime);
+    }
+
+    renderCards(recipes);
+  }
+
+  function renderCards(recipes) {
     container.innerHTML = '';
 
     if (!recipes || recipes.length === 0) {
-      container.innerHTML = '<p>No recipes found. Try different ingredients or filters!</p>';
+      container.innerHTML = isFavoritesPage 
+        ? '<p>You haven\'t saved any recipes yet.</p>' 
+        : '<p>No recipes found. Try different ingredients or filters!</p>';
       return;
     }
 
+    const favorites = JSON.parse(localStorage.getItem('favorites')) || [];
+
     recipes.forEach(recipe => {
+      const isFav = favorites.some(f => f.id == recipe.id);
       const card = document.createElement('div');
       card.className = 'recipe-card';
       card.innerHTML = `
-        <img src="${recipe.image}" alt="${recipe.title}">
+        <img src="${recipe.image || 'https://via.placeholder.com/300x200?text=No+Image'}" alt="${recipe.title}">
         <h3>${recipe.title}</h3>
-        <div style="display:flex; justify-content: space-between; padding: 10px;">
+        <div style="display:flex; justify-content: space-between; padding: 10px; margin-top: auto;">
             <button class="view-btn" data-id="${recipe.id}">View Recipe</button>
-            <button class="fav-btn" data-id="${recipe.id}" data-title="${recipe.title}" style="background:none; border:none; cursor:pointer; font-size:1.2rem;">⭐</button>
+            <button class="fav-btn" data-id="${recipe.id}" data-title="${recipe.title}" data-image="${recipe.image}" style="background:none; border:none; cursor:pointer; font-size:1.2rem; color: ${isFav ? 'orange' : 'black'}">⭐</button>
         </div>
       `;
       container.appendChild(card);
@@ -92,13 +112,20 @@ if (document.getElementById('recipesContainer')) {
       button.addEventListener('click', (e) => {
           const id = button.getAttribute('data-id');
           const title = button.getAttribute('data-title');
-          toggleFavorite({id, title});
-          button.style.color = button.style.color === 'orange' ? 'black' : 'orange';
+          const image = button.getAttribute('data-image');
+          toggleFavorite({id, title, image});
+          
+          if (isFavoritesPage) {
+            loadPageData(); 
+          } else {
+            button.style.color = button.style.color === 'orange' ? 'black' : 'orange';
+          }
       });
     });
   }
 
   async function openRecipeDetails(id) {
+    if (!modal) return;
     modalDetails.innerHTML = '<p>Loading instructions and nutrition...</p>';
     modal.style.display = "block";
 
@@ -118,9 +145,9 @@ if (document.getElementById('recipesContainer')) {
           
           <div style="background: #eef9ee; padding: 15px; border-radius: 8px;">
             <h3>Nutritional Info (per serving):</h3> 
-            <p><strong>Calories:</strong> ${Math.round(details.nutrition.nutrients.find(n => n.name === 'Calories')?.amount || 0)} kcal</p>
-            <p><strong>Protein:</strong> ${details.nutrition.nutrients.find(n => n.name === 'Protein')?.amount || 0}g</p>
-            <p><strong>Fat:</strong> ${details.nutrition.nutrients.find(n => n.name === 'Fat')?.amount || 0}g</p>
+            <p><strong>Calories:</strong> ${Math.round(details.nutrition?.nutrients.find(n => n.name === 'Calories')?.amount || 0)} kcal</p>
+            <p><strong>Protein:</strong> ${details.nutrition?.nutrients.find(n => n.name === 'Protein')?.amount || 0}g</p>
+            <p><strong>Fat:</strong> ${details.nutrition?.nutrients.find(n => n.name === 'Fat')?.amount || 0}g</p>
           </div>
         </div>
       `;
@@ -129,11 +156,10 @@ if (document.getElementById('recipesContainer')) {
 
   function toggleFavorite(recipe) {
     let favorites = JSON.parse(localStorage.getItem('favorites')) || [];
-    const index = favorites.findIndex(f => f.id === recipe.id);
+    const index = favorites.findIndex(f => f.id == recipe.id);
     
     if (index === -1) {
       favorites.push(recipe);
-      alert('Recipe saved to favorites!');
     } else {
       favorites.splice(index, 1);
     }
@@ -143,5 +169,5 @@ if (document.getElementById('recipesContainer')) {
   if (closeBtn) closeBtn.onclick = () => modal.style.display = "none";
   window.onclick = (e) => { if (e.target == modal) modal.style.display = "none"; };
 
-  loadRecipes();
+  loadPageData();
 }
