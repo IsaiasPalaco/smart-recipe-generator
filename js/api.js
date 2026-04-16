@@ -2,7 +2,7 @@
  * API SERVICE MODULE
  * Fixed: Added quotes to API_KEY and ensured clean exports.
  */
-const API_KEY = 'b4d6978b23644d9784aa583734336a92'; // String must be in quotes
+const API_KEY = '620ed87f041a4676a05ba29fc0aae5af';
 const BASE_URL = 'https://api.spoonacular.com/recipes';
 
 export async function fetchRecipes(ingredients, diet, maxTime) {

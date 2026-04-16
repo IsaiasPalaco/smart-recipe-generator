@@ -4,7 +4,6 @@ import { storage } from './storage.js';
 // Global config to match storage.js
 const STORAGE_KEY = 'recipe_favorites';
 
-// --- INITIALIZATION ---
 document.addEventListener('DOMContentLoaded', () => {
     initSearchLogic();
     initDisplayLogic();
@@ -86,7 +85,7 @@ function renderGrid(container, recipes, isFavPage) {
                 <h3>${recipe.title}</h3>
                 <div style="display: flex; gap: 10px; margin-top: 10px;">
                     <button class="view-btn" data-id="${recipe.id}">View</button>
-                    <button class="fav-btn" data-id="${recipe.id}">⭐</button>
+                    <button class="fav-btn">${isFavPage ? "❌" : "⭐"}</button>
                 </div>
             </div>
         `;
@@ -97,9 +96,8 @@ function renderGrid(container, recipes, isFavPage) {
         card.querySelector('.fav-btn').onclick = () => {
             if (isFavPage) {
                 storage.removeFavorite(recipe.id);
-                initDisplayLogic(); // Refresh
+                initDisplayLogic();
             } else {
-                storage.saveFavorite(recipe.id); // You might need to pass the whole recipe object here
                 storage.saveFavorite(recipe); 
                 alert("Saved to favorites!");
             }
