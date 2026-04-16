@@ -95,12 +95,20 @@ if (document.getElementById('recipesContainer') || document.getElementById('favo
             const isFav = favorites.some(f => f.id == recipe.id);
             const card = document.createElement('div');
             card.className = 'recipe-card';
+            const starColor = isFav ? '#FF9800' : '#ccc';
+
             card.innerHTML = `
                 <img src="${recipe.image || 'https://via.placeholder.com/300x200?text=No+Image'}" alt="${recipe.title}">
                 <h3>${recipe.title}</h3>
                 <div style="display:flex; justify-content: space-between; padding: 10px; margin-top: auto;">
                     <button class="view-btn" data-id="${recipe.id}">View Recipe</button>
-                    <button class="fav-btn" data-id="${recipe.id}" data-title="${recipe.title}" data-image="${recipe.image}" style="background:none; border:none; cursor:pointer; font-size:1.2rem; color: ${isFav ? '#FF9800' : '#ccc'}">⭐</button>
+                    <button class="fav-btn" 
+                            data-id="${recipe.id}" 
+                            data-title="${recipe.title}" 
+                            data-image="${recipe.image}" 
+                            style="background:none; border:none; cursor:pointer; font-size:1.2rem; color: ${starColor}; transition: color 0.3s ease;">
+                            ⭐
+                    </button>
                 </div>
             `;
             container.appendChild(card);
@@ -116,12 +124,13 @@ if (document.getElementById('recipesContainer') || document.getElementById('favo
                 const title = button.getAttribute('data-title');
                 const image = button.getAttribute('data-image');
                 
-                const isNowFav = toggleFavorite({id, title, image});
+                const wasAdded = toggleFavorite({id, title, image});
                 
                 if (isFavoritesPage) {
                     loadPageData();
                 } else {
-                    button.style.color = isNowFav ? '#FF9800' : '#ccc';
+
+                    button.style.color = wasAdded ? '#FF9800' : '#ccc';
                 }
             };
         });
@@ -165,16 +174,16 @@ if (document.getElementById('recipesContainer') || document.getElementById('favo
     function toggleFavorite(recipe) {
         let favorites = JSON.parse(localStorage.getItem('favorites')) || [];
         const index = favorites.findIndex(f => f.id == recipe.id);
-        let added = false;
         
         if (index === -1) {
             favorites.push(recipe);
-            added = true;
+            localStorage.setItem('favorites', JSON.stringify(favorites));
+            return true;
         } else {
             favorites.splice(index, 1);
+            localStorage.setItem('favorites', JSON.stringify(favorites));
+            return false;
         }
-        localStorage.setItem('favorites', JSON.stringify(favorites));
-        return added;
     }
 
     if (closeBtn) {
